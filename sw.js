@@ -1,4 +1,4 @@
-const CACHE = 'weby-aplikace-v2';
+const CACHE = 'weby-aplikace-v3';
 const CORE = ['./', 'index.html', 'podminky.html', 'ukazky.html', 'sluzby.html', 'funkce.html', 'cenik.html', 'o-mne.html', 'kontakt.html', 'manifest.webmanifest', 'img/icon-192.png', 'img/icon-512.png', 'img/sonia-desk.webp', 'img/pr-uvod.webp', 'img/mor-app1.webp'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
