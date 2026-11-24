@@ -1,0 +1,16 @@
+{
+  "name": "Weby & aplikace",
+  "short_name": "Weby & aplikace",
+  "description": "Nový web nebo PWA aplikace do 7 dnů od 10 000 Kč.",
+  "lang": "cs",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06090a",
+  "theme_color": "#06090a",
+  "icons": [
+    {"src": "img/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "img/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vyzkoušejte si funkce aplikací | Weby a aplikace</title>
+<meta name="description" content="Věrnostní karta, rezervace, notifikace, objednávky, vstupenky a další funkce, které můžete mít ve své webové aplikaci. Vyzkoušejte si je naživo.">
+<link rel="canonical" href="https://webyaplikace.cz/funkce.html">
+<meta property="og:url" content="https://webyaplikace.cz/funkce.html">
+<meta property="og:site_name" content="Weby &amp; aplikace">
+<meta property="og:image" content="https://webyaplikace.cz/img/og.jpg">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="cs_CZ">
+<meta name="twitter:image" content="https://webyaplikace.cz/img/og.jpg">
+<meta property="og:title" content="Vyzkoušejte si funkce aplikací | Weby a aplikace">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#06090a">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: hravá, ale věcná ukázka, co umí aplikace pro malou firmu
+   IDEA: vitrína funkcí: každá karta je kousek opravdové aplikace, na který se dá sáhnout
+   PICTURE: světlé „obrazovky“ s živými prvky na tmavé noční ploše
+   COLOUR+TYPE: noční #06090a, mentolová #3fd0c9 → meruňková #ff8a66; Space Grotesk + Inter Tight
+   LAYOUT: lišta, titul, filtry podle oboru, mřížka karet, plovoucí lišta s výběrem, výzva k poptávce */
+:root{color-scheme:dark;--glass:#ffffff08;--bg:#06090a;--ink:#eef5f4;--mute:#93a5a3;--line:#ffffff14;--teal:#3fd0c9;--coral:#ff6a4d;--apri:#ff9d7a;--paper:#f6faf9;--ink2:#132022;--sub:#5d6f70;--tint:#e3f6f4}
+*{box-sizing:border-box;min-width:0}
+html{background:var(--bg);scroll-padding-top:90px}
+html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Inter Tight",system-ui,sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:-20% -10% auto;height:70vh;background:radial-gradient(50% 60% at 20% 30%,#3fd0c922,transparent 70%),radial-gradient(40% 50% at 85% 10%,#ff6a4d1c,transparent 70%);pointer-events:none;z-index:-1}
+a{color:inherit}
+h1,h2,h3{font-family:"Space Grotesk",sans-serif;margin:0;line-height:1.1;letter-spacing:-.03em;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(18px,4vw)}
+.grad{background:linear-gradient(100deg,var(--teal) 10%,#c9e9e2 50%,var(--apri) 90%);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;padding:.06em 0 .08em}
+/* lišta */
+.top{position:sticky;top:14px;z-index:50;margin:14px max(14px,2vw) 0;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 18px;border-radius:999px;background:#0b1113e6;border:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.brand{font:700 20px "Space Grotesk";letter-spacing:-.03em;text-decoration:none;white-space:nowrap}
+.brand i{font-style:normal;background:linear-gradient(100deg,var(--teal),var(--apri));-webkit-background-clip:text;background-clip:text;color:transparent}
+.back{margin-left:auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;text-decoration:none;font-weight:600;font-size:15px;background:#ffffff0d;border:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;border:0;font:600 16px "Inter Tight";text-decoration:none;cursor:pointer;background:linear-gradient(100deg,var(--teal),#9ef0ea 55%,var(--apri));color:#06110f;box-shadow:0 14px 40px -14px #3fd0c999}
+/* titul */
+.hero{padding:clamp(56px,9vw,120px) 0 clamp(28px,4vw,48px)}
+.hero h1{font-size:clamp(40px,7vw,92px);font-weight:700;max-width:14ch}
+.hero p{margin-top:22px;max-width:56ch;color:var(--mute);font-size:clamp(17px,1.6vw,20px)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:30px}
+.filters button{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid #ffffff22;background:#ffffff08;font-weight:600;font-size:15px;cursor:pointer}
+.filters button[aria-pressed=true]{background:#3fd0c924;border-color:var(--teal);color:#fff}
+/* mřížka */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:18px;padding-bottom:140px}
+.f{display:flex;flex-direction:column;border-radius:28px;border:1px solid var(--line);background:linear-gradient(180deg,#ffffff0b,#ffffff03);overflow:hidden;transition:border-color .3s}
+.f[hidden]{display:none}
+.f.want{border-color:var(--teal)}
+.demo{margin:14px 14px 0;border-radius:20px;background:var(--paper);color:var(--ink2);padding:18px;min-height:250px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:12px;font-size:15px}
+.f-txt{padding:18px 22px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.f-txt h3{font-size:22px}
+.f-txt p{color:var(--mute);font-size:15.5px}
+.f-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:10px}
+.f-foot small{color:#7f9290;font-size:13.5px}
+.want-btn{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid #ffffff26;background:transparent;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.want-btn[aria-pressed=true]{background:var(--teal);border-color:var(--teal);color:#06110f}
+/* společné prvky ukázek */
+.lbl{font:700 12px "Inter Tight";letter-spacing:.02em;color:var(--sub)}
+.big{font:700 22px/1.15 "Space Grotesk";letter-spacing:-.02em}
+.pill{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:12px;border:1px solid #13202222;background:#fff;color:var(--ink2);font-weight:600;font-size:14px;cursor:pointer}
+.pill[aria-pressed=true],.pill.on{background:var(--ink2);color:#fff;border-color:var(--ink2)}
+.cta{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:14px;border:0;background:linear-gradient(100deg,#2bb5ad,#58d3c9);color:#04201d;font-weight:700;font-size:15px;cursor:pointer;width:100%}
+.cta.coral{background:linear-gradient(100deg,#ff8a66,#ffb08f);color:#2b0d03}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.muted{color:var(--sub);font-size:13.5px}
+.ok{display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:var(--tint);font-weight:600;font-size:14px}
+.ok::before{content:"✓";display:grid;place-items:center;width:26px;height:26px;flex:none;border-radius:50%;background:#2bb5ad;color:#fff;font-size:14px}
+/* věrnostní karta */
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.stamps button{aspect-ratio:1;border-radius:50%;border:2px dashed #2bb5ad;background:transparent;cursor:pointer;display:grid;place-items:center;font-size:18px;color:#fff;transition:background .2s,transform .2s}
+.stamps button.on{background:#2bb5ad;border-style:solid}
+.stamps button.free{border-color:#ff8a66}.stamps button.free.on{background:#ff8a66}
+/* stírací los */
+.scratch{position:relative;height:150px;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#ffe0d4,#d9f6f2);display:grid;place-items:center;text-align:center}
+.scratch b{font:700 40px/1 "Space Grotesk";color:#d9502f}
+.scratch canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+/* notifikace */
+.ph{position:relative;height:210px;border-radius:18px;background:linear-gradient(160deg,#1c2b2e,#0f1719);overflow:hidden}
+.ph .time{position:absolute;top:44px;left:0;right:0;text-align:center;color:#fff;font:600 44px "Space Grotesk";opacity:.9}
+.ph .date{position:absolute;top:100px;left:0;right:0;text-align:center;color:#cfe0de;font-size:13px}
+.note{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:16px;background:#ffffffe8;color:var(--ink2);box-shadow:0 10px 30px -10px #000a;transform:translateY(-130%);transition:transform .5s cubic-bezier(.2,1.4,.4,1)}
+.note.show{transform:none}
+.note i{width:30px;height:30px;flex:none;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,#2bb5ad,#ff8a66);color:#fff;font:700 15px "Space Grotesk";font-style:normal}
+.note b{display:block;font-size:13px}.note span{font-size:12.5px;color:var(--sub)}
+/* objednávka */
+.menu-li{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #1320220f}
+.menu-li span{flex:1}.menu-li em{font-style:normal;color:var(--sub);font-size:13.5px;width:58px;text-align:right}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:32px;height:32px;border-radius:9px;border:0;background:var(--tint);font-weight:700;cursor:pointer;color:var(--ink2)}
+.qty output{width:16px;text-align:center;font-weight:700}
+.steps{display:flex;gap:6px}.steps span{flex:1;height:6px;border-radius:6px;background:#13202218;transition:background .4s}.steps span.on{background:#2bb5ad}
+/* odpočet */
+.cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.cd div{padding:12px 0;border-radius:14px;background:var(--ink2);color:#fff}
+.cd b{display:block;font:700 28px/1 "Space Grotesk";font-variant-numeric:tabular-nums}.cd small{font-size:12px;color:#a9c4c1;font-weight:600}
+/* program */
+.prog-li{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1320220f}
+.prog-li time{font:700 14px "Space Grotesk";width:44px;color:var(--sub)}
+.prog-li span{flex:1;font-weight:600}
+.heart{width:38px;height:38px;border-radius:50%;border:0;background:var(--tint);cursor:pointer;font-size:17px;color:#2bb5ad;transition:transform .2s}
+.heart[aria-pressed=true]{background:#ff8a66;color:#fff}
+/* otevírací doba */
+.open{display:flex;align-items:center;gap:10px}
+.dot{width:12px;height:12px;border-radius:50%;background:#2bb5ad;box-shadow:0 0 0 5px #2bb5ad33}
+.dot.off{background:#d9502f;box-shadow:0 0 0 5px #d9502f33}
+.hours{display:grid;grid-template-columns:auto 1fr;gap:2px 16px;font-size:14px}
+.hours .today{font-weight:700;color:var(--ink2)}
+.hours span{color:var(--sub)}.hours span.today{color:var(--ink2)}
+/* kalkulačka */
+.range{width:100%;accent-color:#2bb5ad;height:28px}
+.price{font:700 34px/1 "Space Grotesk";letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+/* foto */
+.drop{display:grid;place-items:center;text-align:center;gap:6px;min-height:120px;border-radius:16px;border:2px dashed #2bb5ad88;background:#fff;cursor:pointer;padding:12px;font-weight:600;font-size:14px;overflow:hidden}
+.drop img{max-height:130px;width:auto;border-radius:10px}
+/* hodnocení */
+.stars{display:flex;gap:4px}
+.stars button{width:44px;height:44px;border:0;background:none;font-size:32px;line-height:1;color:#13202233;cursor:pointer;padding:0;transition:transform .15s,color .15s}
+.stars button.on{color:#f4a52b}
+.bars{display:grid;gap:4px;font-size:12.5px;color:var(--sub)}
+.bars div{display:grid;grid-template-columns:14px 1fr 30px;gap:8px;align-items:center}
+.bars i{height:7px;border-radius:7px;background:#13202214;position:relative;overflow:hidden}.bars i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:#f4a52b;border-radius:7px}
+/* kvíz */
+.qopts{display:grid;gap:8px}
+.qopts button{min-height:44px;text-align:left;padding:0 14px;border-radius:12px;border:1px solid #13202222;background:#fff;font-weight:600;font-size:14px;cursor:pointer;color:var(--ink2)}
+.qopts button.right{background:#d5f4ef;border-color:#2bb5ad}.qopts button.wrong{background:#ffe2d9;border-color:#ff8a66}
+.qbar{height:6px;border-radius:6px;background:#13202214;overflow:hidden}.qbar i{display:block;height:100%;width:0;background:#2bb5ad;transition:width .4s}
+/* pokrok */
+.ring{--p:0;width:96px;height:96px;border-radius:50%;background:conic-gradient(#2bb5ad calc(var(--p)*1%),#13202214 0);display:grid;place-items:center;flex:none;transition:--p .5s}
+.ring b{width:74px;height:74px;border-radius:50%;background:var(--paper);display:grid;place-items:center;font:700 20px "Space Grotesk"}
+.badges{display:flex;gap:8px}.badges span{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;background:#13202210;filter:grayscale(1);opacity:.45;transition:all .4s}
+.badges span.on{background:#ffe9c7;filter:none;opacity:1;transform:scale(1.08)}
+/* offline */
+.sw{position:relative;width:52px;height:30px;border-radius:30px;border:0;background:#13202226;cursor:pointer;flex:none;transition:background .3s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px #0003;transition:transform .3s}
+.sw[aria-checked=true]{background:#d9502f}.sw[aria-checked=true]::after{transform:translateX(22px)}
+.offbar{padding:8px 12px;border-radius:12px;font-size:13px;font-weight:600;background:#d5f4ef;color:#0f5c57}
+.offbar.off{background:#ffe2d9;color:#8a2a12}
+/* vstupenka */
+.ticket{perspective:900px;height:170px;cursor:pointer}
+.ticket-in{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.3,1.3,.5,1);transform-style:preserve-3d}
+.ticket.flip .ticket-in{transform:rotateY(180deg)}
+.ticket-f,.ticket-b{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:16px;display:flex;flex-direction:column;justify-content:space-between}
+.ticket-f{background:linear-gradient(135deg,#132022,#1f4a48);color:#fff}
+.ticket-b{background:#fff;color:var(--ink2);transform:rotateY(180deg);align-items:center;justify-content:center;gap:8px;border:1px solid #13202218}
+.code{display:grid;grid-template-columns:repeat(11,7px);gap:2px}.code i{height:7px;background:var(--ink2);border-radius:1px}.code i.e{background:transparent}
+/* jazyky */
+.lang .row button{min-width:52px}
+/* menu */
+{ const nav = document.querySelector('.nav'), bg = $('burger');
+  const close = () => { if (window.__lenis) window.__lenis.start(); nav.classList.remove('open'); bg.setAttribute('aria-expanded', 'false'); };
+  bg.addEventListener('click', () => { const o = nav.classList.toggle('open'); if (window.__lenis) o ? window.__lenis.stop() : window.__lenis.start(); bg.setAttribute('aria-expanded', o); bg.setAttribute('aria-label', o ? 'Zavřít menu' : 'Otevřít menu'); });
+  nav.querySelectorAll('nav a').forEach(a => a.addEventListener('click', close)); addEventListener('keydown', e => { if (e.key === 'Escape') close(); }); }
+/* konfety */
+.conf{position:fixed;width:9px;height:14px;border-radius:2px;pointer-events:none;z-index:99}
+/* plovoucí lišta */
+.dock{position:fixed;left:50%;bottom:16px;z-index:60;transform:translate(-50%,160%);display:flex;align-items:center;gap:14px;padding:10px 10px 10px 20px;border-radius:999px;background:#0b1113f2;border:1px solid #3fd0c955;box-shadow:0 20px 60px -20px #000;transition:transform .45s cubic-bezier(.2,1.3,.4,1);width:max-content;max-width:calc(100% - 24px)}
+.dock{visibility:hidden}.dock.show{transform:translate(-50%,0);visibility:visible}
+.dock span{font-weight:600;font-size:15px;white-space:nowrap}
+.dock .btn{min-height:46px;padding:0 20px;font-size:15px}
+.end{margin:0 auto 120px;padding:clamp(28px,4vw,56px);border-radius:32px;border:1px solid var(--line);background:radial-gradient(70% 90% at 100% 0,#3fd0c922,transparent 60%),radial-gradient(60% 80% at 0 100%,#ff6a4d1a,transparent 60%),#0b1113;text-align:center;display:grid;justify-items:center;gap:18px}
+.end h2{font-size:clamp(30px,4.4vw,56px)}
+.end p{color:var(--mute);max-width:52ch}
+footer{padding:0 0 40px;text-align:center;color:#6f8280;font-size:14px}
+@media(max-width:520px){.brand{font-size:18px}.back{padding:0 14px}.back .long{display:none}.dock span .long{display:none}.demo{padding:16px;margin:12px 12px 0}.f-txt{padding:16px 18px 18px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.chat{display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto;padding:2px}
+.msg{max-width:82%;padding:9px 12px;border-radius:16px;font-size:14px;line-height:1.35}
+.msg.in{align-self:flex-start;background:#fff;border:1px solid #1320221a;border-bottom-left-radius:4px}
+.msg.out{align-self:flex-end;background:#2bb5ad;color:#fff;border-bottom-right-radius:4px}
+.msg.typing{color:var(--sub);font-style:italic}
+.post{display:flex;gap:12px;align-items:center;width:100%;padding:8px 0;border:0;border-bottom:1px solid #1320220f;background:none;text-align:left;cursor:pointer;color:var(--ink2)}
+.post i{width:46px;height:46px;flex:none;border-radius:12px;background:var(--c)}
+.post b{display:block;font-size:14px}.post span{font-size:12.5px;color:var(--sub)}
+.post-open h4{margin:0 0 6px;font:700 18px "Space Grotesk"}.post-open p{font-size:14px;color:var(--sub);margin:0 0 10px}
+.f-more{grid-column:1/-1;background:radial-gradient(70% 90% at 100% 0,#3fd0c922,transparent 60%),radial-gradient(60% 80% at 0 100%,#ff6a4d1a,transparent 60%),#0b1113;border-color:#3fd0c944}
+.more-in{padding:clamp(24px,3.4vw,44px);display:flex;flex-direction:column;gap:14px}
+.big-h{font-size:clamp(28px,3.6vw,44px)}
+.more-in p{color:var(--mute)}
+.more-list{list-style:none;margin:6px 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.more-list li{padding:10px 14px;border-radius:14px;background:#ffffff0d;border:1px solid var(--line);font-weight:600;font-size:15px}
+.muted2{font-size:15px}
+/* sdílená navigace */
+.nav{position:fixed;inset:14px 14px auto;z-index:60;display:flex;align-items:center;gap:16px;padding:8px 8px 8px 18px;border-radius:999px;background:#0b1113b3;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--line);max-width:1280px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:600;white-space:nowrap}
+.brand{font:700 20px "Space Grotesk";letter-spacing:-.04em;gap:0!important}
+.brand em{display:inline-block;font:700 1.05em/1 "Inter Tight",Arial,sans-serif;font-style:normal;margin:0 .2em;background:linear-gradient(100deg,var(--teal),var(--coral));-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav nav{display:flex;gap:2px;margin-left:auto}
+.nav nav a{padding:10px 14px;border-radius:999px;text-decoration:none;font-weight:500;font-size:15px;color:#c9d6d4}
+.nav nav a:hover{background:var(--glass);color:#fff}
+.nav .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 26px;border-radius:999px;border:0;font:600 16px "Inter Tight";text-decoration:none;cursor:pointer;background:#fff;color:#06090a;will-change:transform;white-space:nowrap}
+.nav .btn.teal{background:var(--teal);color:#031312;box-shadow:0 0 0 1px #3fd0c966,0 10px 40px -10px #3fd0c9aa}
+.burger{display:none}
+@media(max-width:920px){.nav .btn{margin-left:auto;min-height:44px;padding:0 18px;flex:none}
+.burger{display:grid;place-content:center;gap:6px;width:44px;height:44px;border-radius:50%;border:0;background:var(--glass);box-shadow:inset 0 0 0 1px #ffffff2a;cursor:pointer;flex:none}
+.burger span{display:block;width:18px;height:2px;border-radius:2px;background:#fff;transition:transform .3s}
+.nav.open .burger span:first-child{transform:translateY(4px) rotate(45deg)}.nav.open .burger span:last-child{transform:translateY(-4px) rotate(-45deg)}
+.nav nav{display:none;position:absolute;left:0;right:0;top:calc(100% + 8px);flex-direction:column;gap:2px;margin:0;padding:8px;border-radius:24px;background:#0b1113;border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -20px #000c;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.nav.open nav{display:flex}
+.nav nav a{padding:13px 14px;font-size:17px;border-radius:14px;flex:none}.nav nav a.navcta{margin-top:6px;background:var(--teal);color:#031312;font-weight:600;text-align:center}}
+.nav nav a.navcta{display:none}@media(max-width:920px){.nav nav a.navcta{display:block}}
+.brand{min-height:44px}
+@media(max-width:920px){.nav{gap:8px}}
+@media(max-width:480px){.nav .long{display:none}.nav .btn{padding:0 16px}.brand{font-size:18px}}
+@media(max-width:400px){.nav>.btn{display:none}.burger{margin-left:auto}}
+.brand{flex:none}@media(min-width:921px) and (max-width:1120px){.nav nav a{padding:10px 9px;font-size:14px}}
+@media(max-width:920px){
+.nav nav{position:fixed;left:14px;right:14px;top:86px;bottom:14px;max-height:none;justify-content:space-between;padding:clamp(8px,1.6vh,16px);overflow:hidden}
+.nav nav a{flex:1 1 0;min-height:0;display:flex;align-items:center;padding:0 16px;font-size:clamp(16px,2.9vh,22px);font-weight:600}
+.nav nav a.navcta{flex:1.2 1 0;justify-content:center;margin-top:clamp(4px,1vh,10px);display:flex}
+.nav.open{backdrop-filter:none;-webkit-backdrop-filter:none;background:#0b1113}
+.nav.open::after{content:"";position:fixed;inset:0;z-index:-1;background:#06090af2}}
+.nav nav a[aria-current=page]{color:#fff;background:#ffffff12}
+main.wrap{padding-top:clamp(60px,8vw,90px)}
+</style>
+</head>
+<body>
+<header class="nav" id="top">
+  <a class="brand" href="index.html" aria-label="Weby a aplikace, úvod">weby<em>&amp;</em>aplikace</a>
+  <nav aria-label="Hlavní menu" id="mnav" data-lenis-prevent>
+    <a href="ukazky.html">Ukázky</a><a href="sluzby.html">Služby</a><a href="funkce.html" aria-current="page">Funkce</a><a href="cenik.html">Ceník</a><a href="o-mne.html">O mně</a><a href="kontakt.html">Kontakt</a><a class="navcta" href="kontakt.html">Chci nový web →</a>
+  </nav>
+  <a class="btn teal" href="kontakt.html"><span>Chci <span class="long">nový&nbsp;</span>web</span></a>
+  <button class="burger" id="burger" type="button" aria-label="Otevřít menu" aria-expanded="false" aria-controls="mnav"><span></span><span></span></button>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Co všechno může umět <span class="grad">vaše aplikace.</span></h1>
+    <p>Klepejte, posouvejte, zkoušejte. Každá karta je kousek opravdové aplikace a nic se nerozbije. Funkce, které se vám líbí, si označte. Pošlu vám k&nbsp;nim nezávaznou nabídku.</p>
+    <div class="filters" id="filters" role="group" aria-label="Filtrovat podle oboru">
+      <button type="button" data-f="all" aria-pressed="true">Vše</button>
+      <button type="button" data-f="jidlo" aria-pressed="false">Kavárna a restaurace</button>
+      <button type="button" data-f="salon" aria-pressed="false">Salon a služby</button>
+      <button type="button" data-f="remeslo" aria-pressed="false">Řemeslník</button>
+      <button type="button" data-f="kurzy" aria-pressed="false">Kurzy a fitness</button>
+      <button type="button" data-f="akce" aria-pressed="false">Akce a festivaly</button>
+    </div>
+  </section>
+
+  <div class="grid" id="grid">
+
+    <article class="f" data-tags="jidlo salon" data-name="Věrnostní karta">
+      <div class="demo">
+        <div class="lbl">VĚRNOSTNÍ KARTA</div>
+        <div class="big" id="loyTxt">Ještě 7 razítek do kávy zdarma</div>
+        <div class="stamps" id="stamps" aria-label="Razítka, klepněte pro přidání"></div>
+        <div class="muted">Klepněte na kroužek a přidejte razítko.</div>
+      </div>
+      <div class="f-txt"><h3>Věrnostní karta</h3><p>Žádné papírové kartičky. Zákazník sbírá razítka v telefonu a vy víte, kdo se vrací.</p></div>
+    </article>
+
+    <article class="f" data-tags="salon jidlo kurzy" data-name="Online rezervace">
+      <div class="demo" id="rez">
+        <div class="lbl">REZERVACE</div>
+        <div class="row" id="rezDays"></div>
+        <div class="row" id="rezSlots"></div>
+        <button class="cta" id="rezGo" type="button" disabled>Vyberte termín</button>
+      </div>
+      <div class="f-txt"><h3>Online rezervace</h3><p>Zákazník si vybere den a čas sám, i v noci. Vám odpadne telefonování a přepisování do diáře.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon remeslo kurzy akce" data-name="Upozornění do mobilu">
+      <div class="demo">
+        <div class="ph" aria-live="polite"><div class="time" id="phTime">9:41</div><div class="date" id="phDate"></div>
+          <div class="note" id="note"><i>&amp;</i><div><b id="noteT">Připomínka rezervace</b><span id="noteS">Zítra v 10:00 vás čekáme. Těšíme se!</span></div></div>
+        </div>
+        <div class="row"><button class="pill" type="button" data-n="0">Připomínka</button><button class="pill" type="button" data-n="1">Akce dne</button><button class="pill" type="button" data-n="2">Hotovo k vyzvednutí</button></div>
+      </div>
+      <div class="f-txt"><h3>Upozornění do mobilu</h3><p>Připomínky termínů, akce a novinky přímo na displej zákazníka. Bez SMS a bez poplatků za každou zprávu.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo" data-name="Objednávka s sebou">
+      <div class="demo">
+        <div class="lbl">OBJEDNÁVKA S SEBOU</div>
+        <div id="menu"></div>
+        <div class="steps" id="ordSteps" aria-hidden="true"><span></span><span></span><span></span></div>
+        <button class="cta" id="ordGo" type="button" disabled>Přidejte něco do košíku</button>
+      </div>
+      <div class="f-txt"><h3>Objednávka s sebou</h3><p>Zákazník si objedná cestou a jen si to vyzvedne. Vidí, v jakém stavu jeho objednávka je.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon akce" data-name="Stírací kupon">
+      <div class="demo">
+        <div class="lbl">STÍRACÍ KUPON</div>
+        <div class="scratch"><div><b>−15 %</b><div class="muted" style="margin-top:6px">na další nákup · kód LETO15</div></div><canvas id="scratch" aria-label="Setřete prstem nebo myší"></canvas></div>
+        <div class="muted">Setřete stříbrnou vrstvu prstem nebo myší.</div>
+      </div>
+      <div class="f-txt"><h3>Stírací kupon</h3><p>Hravá sleva, která přiláká zpátky. Funguje skvěle na sociálních sítích i při otevření nové pobočky.</p></div>
+    </article>
+
+    <article class="f" data-tags="akce kurzy" data-name="Odpočet do akce">
+      <div class="demo">
+        <div class="lbl">ODPOČET</div>
+        <div class="big">Do festivalu zbývá</div>
+        <div class="cd" id="cd"><div><b>0</b><small>DNÍ</small></div><div><b>0</b><small>HOD</small></div><div><b>0</b><small>MIN</small></div><div><b>0</b><small>SEK</small></div></div>
+        <div class="muted" id="cdDate"></div>
+      </div>
+      <div class="f-txt"><h3>Odpočet do akce</h3><p>Napětí před festivalem, otevřením nebo začátkem kurzu. Lidé se do aplikace vracejí každý den.</p></div>
+    </article>
+
+    <article class="f" data-tags="akce kurzy" data-name="Můj program">
+      <div class="demo">
+        <div class="row"><button class="pill on" type="button" id="progAll" aria-pressed="true">Celý program</button><button class="pill" type="button" id="progMine" aria-pressed="false">Můj program (<span id="progN">0</span>)</button></div>
+        <div id="prog"></div>
+      </div>
+      <div class="f-txt"><h3>Můj program</h3><p>Návštěvník si srdíčkem uloží, co ho zajímá, a aplikace mu sestaví vlastní program.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon remeslo kurzy akce" data-name="Máme otevřeno">
+      <div class="demo">
+        <div class="open"><span class="dot" id="openDot"></span><span class="big" id="openTxt">Máme otevřeno</span></div>
+        <div class="muted" id="openSub"></div>
+        <div class="hours" id="hours"></div>
+      </div>
+      <div class="f-txt"><h3>Máme otevřeno</h3><p>Aplikace sama ukáže, jestli máte právě otevřeno a kdy zavíráte. Podle skutečného času, včetně svátků.</p></div>
+    </article>
+
+    <article class="f" data-tags="remeslo salon" data-name="Kalkulačka ceny">
+      <div class="demo">
+        <div class="lbl">ORIENTAČNÍ CENA MALOVÁNÍ</div>
+        <label class="muted" for="calcM">Plocha stěn: <b id="calcMv">60</b> m²</label>
+        <input class="range" id="calcM" type="range" min="10" max="300" step="5" value="60">
+        <div class="row" id="calcT"><button class="pill on" type="button" data-k="1" aria-pressed="true">Bílá</button><button class="pill" type="button" data-k="1.3" aria-pressed="false">Barevná</button><button class="pill" type="button" data-k="1.6" aria-pressed="false">Dekorativní</button></div>
+        <div class="price" id="calcP">0 Kč</div>
+        <div class="muted">Ukázkové ceny. Do aplikace dám vaše.</div>
+      </div>
+      <div class="f-txt"><h3>Kalkulačka ceny</h3><p>Zákazník si spočítá orientační cenu sám a vám přijde poptávka, která už s cenou počítá.</p></div>
+    </article>
+
+    <article class="f" data-tags="remeslo" data-name="Poptávka s fotkou">
+      <div class="demo">
+        <div class="lbl">POPTÁVKA S FOTKOU</div>
+        <label class="drop" id="drop"><input type="file" accept="image/*" id="photo" hidden><span id="dropTxt">📷 Vyfoťte, co je potřeba opravit</span></label>
+        <button class="cta" id="photoGo" type="button" disabled>Nejdřív přidejte fotku</button>
+      </div>
+      <div class="f-txt"><h3>Poptávka s fotkou</h3><p>Místo dlouhého popisu jedna fotka. Hned víte, co vezete s sebou a kolik to bude stát.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon remeslo kurzy" data-name="Hodnocení zákazníků">
+      <div class="demo">
+        <div class="lbl">OHODNOŤTE NÁS</div>
+        <div class="stars" id="stars" role="radiogroup" aria-label="Hodnocení"></div>
+        <div class="muted" id="starTxt">Klepněte na hvězdičky.</div>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="f-txt"><h3>Hodnocení zákazníků</h3><p>Spokojení zákazníci ohodnotí rovnou v aplikaci. Ti nespokojení napíšou nejdřív vám, ne na internet.</p></div>
+    </article>
+
+    <article class="f" data-tags="kurzy" data-name="Kvíz a testy">
+      <div class="demo">
+        <div class="qbar"><i id="qbar"></i></div>
+        <div class="big" id="qq"></div>
+        <div class="qopts" id="qopts"></div>
+      </div>
+      <div class="f-txt"><h3>Kvíz a testy</h3><p>Opakování po lekci, vstupní test nebo soutěž. Učení, které baví a které si lidé pamatují.</p></div>
+    </article>
+
+    <article class="f" data-tags="kurzy" data-name="Pokrok a odznaky">
+      <div class="demo">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="ring" id="ring"><b id="ringTxt">0 %</b></div>
+          <div><div class="lbl">TÝDENNÍ CÍL</div><div class="big">4 tréninky</div><div class="badges" id="badges" style="margin-top:8px"><span title="První trénink">🌱</span><span title="Polovina">🔥</span><span title="Cíl splněn">🏆</span></div></div>
+        </div>
+        <button class="cta" id="doneBtn" type="button">Mám hotovo ✓</button>
+      </div>
+      <div class="f-txt"><h3>Pokrok a odznaky</h3><p>Lidé vidí, kam se posunuli, a sbírají odznaky. Motivace, díky které vydrží a vracejí se.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon remeslo kurzy akce" data-name="Funguje i bez internetu">
+      <div class="demo">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span class="big">Režim letadlo</span><button class="sw" id="offSw" type="button" role="switch" aria-checked="false" aria-label="Vypnout internet"></button></div>
+        <div class="offbar" id="offBar">Online · vše aktuální</div>
+        <div class="menu-li"><span>Vaše vstupenka</span><em>uloženo</em></div>
+        <div class="menu-li"><span>Program festivalu</span><em>uloženo</em></div>
+        <div class="menu-li"><span>Mapa areálu</span><em>uloženo</em></div>
+      </div>
+      <div class="f-txt"><h3>Funguje i bez internetu</h3><p>Ve sklepě, na festivalu nebo v horách. Důležité věci má zákazník uložené v telefonu.</p></div>
+    </article>
+
+    <article class="f" data-tags="akce" data-name="Digitální vstupenka">
+      <div class="demo">
+        <div class="ticket" id="ticket" role="button" tabindex="0" aria-label="Otočit vstupenku"><div class="ticket-in">
+          <div class="ticket-f"><div class="lbl" style="color:#9fd9d3">VSTUPENKA · SOBOTA</div><div><div class="big">Letní festival</div><div style="font-size:13px;color:#cfe5e2">Vstup A · 14:00 · Jana Nováková</div></div><div style="font-size:12.5px;color:#9fd9d3">Klepněte pro kód ↻</div></div>
+          <div class="ticket-b"><div class="code" id="code"></div><div class="muted">Ukázkový kód · u vstupu se naskenuje</div></div>
+        </div></div>
+      </div>
+      <div class="f-txt"><h3>Digitální vstupenka</h3><p>Vstupenka vždy po ruce, i offline. Žádné tisknutí, žádné hledání v e-mailech.</p></div>
+    </article>
+
+    <article class="f lang" data-tags="jidlo salon remeslo kurzy akce" data-name="Více jazyků">
+      <div class="demo">
+        <div class="row"><button class="pill on" type="button" data-l="cs" aria-pressed="true">CZ</button><button class="pill" type="button" data-l="en" aria-pressed="false">EN</button><button class="pill" type="button" data-l="de" aria-pressed="false">DE</button><button class="pill" type="button" data-l="uk" aria-pressed="false">UA</button></div>
+        <div class="big" id="langH">Vítejte u nás!</div>
+        <div class="muted" id="langP">Otevřeno denně od 8 do 20 hodin.</div>
+        <span class="cta coral" id="langB">Rezervovat</span>
+      </div>
+      <div class="f-txt"><h3>Více jazyků</h3><p>Turisté i cizinci si přepnou jazyk jedním klepnutím. Ideální pro Prahu, hory i festivaly.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon remeslo kurzy akce" data-name="Zprávy a chat">
+      <div class="demo">
+        <div class="lbl">ZPRÁVY</div>
+        <div class="chat" id="chat" aria-live="polite"><div class="msg in">Dobrý den! S čím vám můžu pomoct? 🙂</div></div>
+        <div class="row" id="chatQ"><button class="pill" type="button">Máte zítra volno?</button><button class="pill" type="button">Kolik stojí střih?</button><button class="pill" type="button">Kde zaparkuju?</button></div>
+      </div>
+      <div class="f-txt"><h3>Zprávy a chat</h3><p>Zákazník vám napíše přímo v aplikaci. Na časté dotazy může odpovědět i automat, vy jen na ty důležité.</p></div>
+    </article>
+
+    <article class="f" data-tags="jidlo salon remeslo kurzy akce" data-name="Blog a novinky">
+      <div class="demo" id="blog">
+        <div class="lbl">NOVINKY</div>
+        <div id="blogList"></div>
+      </div>
+      <div class="f-txt"><h3>Blog a novinky</h3><p>Novinky, akce a tipy píšete sami v jednoduché administraci. Zákazníci je uvidí hned a Google je má rád.</p></div>
+    </article>
+
+    <article class="f f-more" data-tags="jidlo salon remeslo kurzy akce" data-name="Jiná funkce na míru">
+      <div class="more-in">
+        <h3 class="big-h">A spousta dalšího.</h3>
+        <p>Tohle je jen výběr. Do aplikace nebo webu můžu přidat třeba:</p>
+        <ul class="more-list"><li>E-shop a platby kartou</li><li>Dárkové poukazy</li><li>QR menu na stůl</li><li>Galerie a fotky</li><li>Mapa a navigace</li><li>Kalendář akcí</li><li>Členská sekce s přihlášením</li><li>Newsletter</li><li>Přihlášky a formuláře</li><li>Zálohy a platby předem</li><li>Statistiky návštěvnosti</li><li>Administrace obsahu</li><li>Propojení se sociálními sítěmi</li><li>Chatbot na časté dotazy</li></ul>
+        <p class="muted2">Nenašli jste, co potřebujete? Napište mi. Většinu věcí umím přidat.</p>
+      </div>
+    </article>
+
+  </div>
+
+  <section class="end">
+    <h2>Líbí se vám něco? <span class="grad">Postavím vám to.</span></h2>
+    <p>Funkce se dají libovolně kombinovat. Aplikace s věrnostní kartou a rezervacemi stojí od 10&nbsp;000&nbsp;Kč a je hotová do 7&nbsp;dnů od odsouhlasení.</p>
+    <a class="btn" href="kontakt.html" id="endBtn">Chci nabídku →</a>
+  </section>
+</main>
+<footer>© <span id="yr"></span> Nela Mizera, MBA · <a href="index.html">weby &amp; aplikace</a></footer>
+
+<div class="dock" id="dock" aria-live="polite"><span>Vybráno: <b id="dockN">0</b> <span class="long">funkcí</span></span><a class="btn" href="kontakt.html" id="dockBtn">Chci nabídku →</a></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+{
+const $ = id => document.getElementById(id);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+$('yr').textContent = new Date().getFullYear();
+if (window.Lenis && !reduce) { const lenis = new Lenis({ lerp: 0.1 }); window.__lenis = lenis; const raf = t => { lenis.raf(t); requestAnimationFrame(raf); }; requestAnimationFrame(raf); }
+
+/* konfety */
+function confetti(el) {
+  if (reduce) return;
+  const r = el.getBoundingClientRect(), cols = ['#3fd0c9', '#ff8a66', '#ffd166', '#9ef0ea', '#ff6a4d'];
+  for (let i = 0; i < 34; i++) {
+    const c = document.createElement('i'); c.className = 'conf'; c.style.background = cols[i % cols.length];
+    c.style.left = (r.left + r.width / 2) + 'px'; c.style.top = (r.top + r.height / 2) + 'px'; document.body.appendChild(c);
+    const a = Math.random() * Math.PI * 2, d = 80 + Math.random() * 160;
+    const an = c.animate([{ transform: 'translate(0,0) rotate(0)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 140}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 1100 + Math.random() * 600, easing: 'cubic-bezier(.2,.7,.4,1)' });
+    an.onfinish = () => c.remove();
+  }
+}
+const pop = el => { if (window.gsap && !reduce) gsap.fromTo(el, { scale: .94 }, { scale: 1, duration: .45, ease: 'back.out(3)' }); };
+
+/* filtry */
+$('filters').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $('filters').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const f = b.dataset.f;
+  document.querySelectorAll('.f').forEach(c => { c.hidden = f !== 'all' && !c.dataset.tags.split(' ').includes(f); });
+});
+
+/* výběr funkcí */
+const wanted = new Set();
+document.querySelectorAll('.f').forEach(card => {
+  if (!card.querySelector('.f-txt')) return;
+  const foot = document.createElement('div'); foot.className = 'f-foot';
+  const tags = { jidlo: 'kavárny', salon: 'salony', remeslo: 'řemeslníky', kurzy: 'kurzy', akce: 'akce' };
+  const t = card.dataset.tags.split(' ');
+  foot.innerHTML = `<small>${t.length >= 5 ? 'Hodí se pro každý obor' : 'Hodí se pro ' + t.map(x => tags[x]).join(', ')}</small><button class="want-btn" type="button" aria-pressed="false">＋ Chci</button>`;
+  card.querySelector('.f-txt').appendChild(foot);
+  const btn = foot.querySelector('button');
+  btn.addEventListener('click', () => {
+    const on = !wanted.has(card.dataset.name);
+    on ? wanted.add(card.dataset.name) : wanted.delete(card.dataset.name);
+    btn.setAttribute('aria-pressed', on); btn.textContent = on ? '✓ Vybráno' : '＋ Chci'; card.classList.toggle('want', on);
+    $('dockN').textContent = wanted.size; $('dock').classList.toggle('show', wanted.size > 0);
+    try { localStorage.setItem('wa-funkce', JSON.stringify([...wanted])); } catch (e) {}
+  });
+});
+try { localStorage.removeItem('wa-funkce'); } catch (e) {}
+
+/* 1 věrnostní karta */
+let st = 3;
+const drawStamps = () => {
+  $('stamps').innerHTML = Array.from({ length: 10 }, (_, i) => `<button type="button" class="${i < st ? 'on' : ''} ${i === 9 ? 'free' : ''}" aria-label="Razítko ${i + 1}">${i < st ? '✓' : i === 9 ? '☕' : ''}</button>`).join('');
+  $('loyTxt').textContent = st >= 10 ? 'Káva zdarma je vaše! ☕' : `Ještě ${10 - st} ${10 - st === 1 ? 'razítko' : 10 - st < 5 ? 'razítka' : 'razítek'} do kávy zdarma`;
+};
+$('stamps').addEventListener('click', e => {
+  if (!e.target.closest('button')) return;
+  if (st >= 10) { st = 0; drawStamps(); return; }
+  st++; drawStamps(); pop($('stamps').children[st - 1]);
+  if (st === 10) confetti($('stamps'));
+});
+drawStamps();
+
+/* 2 rezervace */
+{
+  const dn = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'], now = new Date(); let day = null, slot = null;
+  const days = Array.from({ length: 5 }, (_, i) => { const d = new Date(now); d.setDate(d.getDate() + i + 1); return d; });
+  $('rezDays').innerHTML = days.map((d, i) => `<button class="pill" type="button" data-i="${i}" aria-pressed="false">${dn[d.getDay()]} ${d.getDate()}.</button>`).join('');
+  const slots = ['9:00', '10:30', '12:00', '14:30', '16:00', '17:30'];
+  const drawSlots = () => {
+    if (day === null) { $('rezSlots').innerHTML = '<span class="muted">Nejdřív vyberte den.</span>'; return; }
+    $('rezSlots').innerHTML = slots.map((s, i) => { const busy = (i + day) % 3 === 0; return `<button class="pill" type="button" data-s="${s}" ${busy ? 'disabled style="opacity:.35;text-decoration:line-through"' : ''} aria-pressed="${slot === s}">${s}</button>`; }).join('');
+  };
+  $('rezDays').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; day = +b.dataset.i; slot = null; $('rezDays').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); drawSlots(); upd(); });
+  $('rezSlots').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.disabled) return; slot = b.dataset.s; $('rezSlots').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); upd(); });
+  const upd = () => { const ok = day !== null && slot; $('rezGo').disabled = !ok; $('rezGo').textContent = ok ? `Rezervovat ${dn[days[day].getDay()]} ${days[day].getDate()}. v ${slot}` : 'Vyberte termín'; };
+  $('rezGo').addEventListener('click', () => {
+    const d = days[day], box = $('rez');
+    box.innerHTML = `<div class="lbl">REZERVACE</div><div class="ok">Hotovo! ${dn[d.getDay()]} ${d.getDate()}. ${d.getMonth() + 1}. v ${slot}</div><div class="muted">Den předem vám přijde připomínka do mobilu.</div><button class="pill" type="button" id="rezAgain">Zkusit znovu</button>`;
+    confetti(box); $('rezAgain').addEventListener('click', () => location.reload());
+  });
+  drawSlots();
+}
+
+/* 3 notifikace */
+{
+  const N = [['Připomínka rezervace', 'Zítra v 10:00 vás čekáme. Těšíme se!'], ['Dnes −20 % na dorty 🍰', 'Jen do 17:00, ukažte tuhle zprávu u pokladny.'], ['Objednávka je hotová ✓', 'Vaše káva a croissant čekají u okénka.']];
+  const tick = () => { const d = new Date(); $('phTime').textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); $('phDate').textContent = d.toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long' }); };
+  tick(); setInterval(tick, 20000);
+  let tm;
+  document.querySelectorAll('[data-n]').forEach(b => b.addEventListener('click', () => {
+    const [t, s] = N[+b.dataset.n], n = $('note');
+    n.classList.remove('show'); clearTimeout(tm);
+    setTimeout(() => { $('noteT').textContent = t; $('noteS').textContent = s; n.classList.add('show'); if (navigator.vibrate) try { navigator.vibrate(60); } catch (e) {} }, 220);
+    tm = setTimeout(() => n.classList.remove('show'), 5200);
+  }));
+  setTimeout(() => $('note').classList.add('show'), 900); setTimeout(() => $('note').classList.remove('show'), 4800);
+}
+
+/* 4 objednávka */
+{
+  const M = [['Cappuccino', 69], ['Croissant', 45], ['Domácí limonáda', 59]], q = [0, 0, 0];
+  $('menu').innerHTML = M.map(([n, p], i) => `<div class="menu-li"><span>${n}</span><em>${p} Kč</em><div class="qty"><button type="button" data-i="${i}" data-d="-1" aria-label="Méně ${n}">−</button><output id="q${i}">0</output><button type="button" data-i="${i}" data-d="1" aria-label="Více ${n}">+</button></div></div>`).join('');
+  const upd = () => { const sum = q.reduce((a, v, i) => a + v * M[i][1], 0); M.forEach((_, i) => $('q' + i).textContent = q[i]); $('ordGo').disabled = !sum; $('ordGo').textContent = sum ? `Objednat za ${sum} Kč` : 'Přidejte něco do košíku'; };
+  $('menu').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const i = +b.dataset.i; q[i] = Math.max(0, Math.min(9, q[i] + +b.dataset.d)); upd(); });
+  $('ordGo').addEventListener('click', () => {
+    const s = $('ordSteps').children, lab = ['Přijato ✓', 'Připravujeme…', 'Hotovo k vyzvednutí ☕'];
+    $('ordGo').disabled = true; [0, 1, 2].forEach(i => setTimeout(() => { s[i].classList.add('on'); $('ordGo').textContent = lab[i]; if (i === 2) { confetti($('ordGo')); setTimeout(() => { [...s].forEach(x => x.classList.remove('on')); q.fill(0); upd(); }, 3500); } }, i * 1300));
+  });
+  upd();
+}
+
+/* 5 stírací kupon */
+{
+  const cv = $('scratch'), ctx = cv.getContext('2d'); let down = false, done = false;
+  const paint = () => {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1); cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.scale(dpr, dpr);
+    const g = ctx.createLinearGradient(0, 0, r.width, r.height); g.addColorStop(0, '#b9c3c4'); g.addColorStop(.5, '#e6ecec'); g.addColorStop(1, '#a9b4b5');
+    ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = g; ctx.fillRect(0, 0, r.width, r.height);
+    ctx.fillStyle = '#5d6f70'; ctx.font = '600 15px "Inter Tight", sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Setřete mě ✦', r.width / 2, r.height / 2 + 5); done = false; cv.style.opacity = 1;
+  };
+  const scratchAt = e => {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill();
+  };
+  const check = () => {
+    if (done) return; const d = ctx.getImageData(0, 0, cv.width, cv.height).data; let clear = 0;
+    for (let i = 3; i < d.length; i += 64) if (d[i] === 0) clear++;
+    if (clear / (d.length / 64) > .45) { done = true; cv.style.transition = 'opacity .5s'; cv.style.opacity = 0; confetti(cv); setTimeout(() => { cv.style.transition = ''; paint(); }, 6000); }
+  };
+  cv.addEventListener('pointerdown', e => { down = true; cv.setPointerCapture(e.pointerId); scratchAt(e); });
+  cv.addEventListener('pointermove', e => { if (down) scratchAt(e); });
+  cv.addEventListener('pointerup', () => { down = false; check(); });
+  cv.addEventListener('pointercancel', () => { down = false; });
+  document.fonts ? document.fonts.ready.then(paint) : paint();
+  new ResizeObserver(() => { if (!done) paint(); }).observe(cv);
+}
+
+/* 6 odpočet */
+{
+  const target = new Date(); target.setDate(target.getDate() + 12); target.setHours(14, 0, 0, 0);
+  $('cdDate').textContent = 'Začátek: ' + target.toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long' }) + ' ve 14:00';
+  const b = $('cd').querySelectorAll('b');
+  const tick = () => { let s = Math.max(0, (target - new Date()) / 1000 | 0); const v = [s / 86400 | 0, (s %= 86400) / 3600 | 0, (s %= 3600) / 60 | 0, s % 60]; v.forEach((x, i) => { const t = String(x).padStart(2, '0'); if (b[i].textContent !== t) b[i].textContent = t; }); };
+  tick(); setInterval(tick, 1000);
+}
+
+/* 7 můj program */
+{
+  const P = [['14:00', 'Otevření areálu'], ['15:30', 'Kapela Ozvěny'], ['17:00', 'Workshop bubnování'], ['19:00', 'Hlavní koncert'], ['21:30', 'Ohňová show']], fav = new Set([3]); let mine = false;
+  const draw = () => {
+    const list = P.map((p, i) => [p, i]).filter(([, i]) => !mine || fav.has(i));
+    $('prog').innerHTML = list.length ? list.map(([[t, n], i]) => `<div class="prog-li"><time>${t}</time><span>${n}</span><button class="heart" type="button" data-i="${i}" aria-pressed="${fav.has(i)}" aria-label="Uložit ${n}">${fav.has(i) ? '♥' : '♡'}</button></div>`).join('') : '<div class="muted">Zatím nic. Uložte si něco srdíčkem.</div>';
+    $('progN').textContent = fav.size;
+  };
+  $('prog').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const i = +b.dataset.i; fav.has(i) ? fav.delete(i) : fav.add(i); draw(); });
+  const sw = m => { mine = m; $('progAll').classList.toggle('on', !m); $('progMine').classList.toggle('on', m); $('progAll').setAttribute('aria-pressed', !m); $('progMine').setAttribute('aria-pressed', m); draw(); };
+  $('progAll').addEventListener('click', () => sw(false)); $('progMine').addEventListener('click', () => sw(true));
+  draw();
+}
+
+/* 8 máme otevřeno */
+{
+  const H = [null, [8, 18], [8, 18], [8, 18], [8, 18], [8, 20], [9, 14]], nm = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+  const draw = () => {
+    const d = new Date(), w = d.getDay(), h = d.getHours() + d.getMinutes() / 60, t = H[w], open = t && h >= t[0] && h < t[1];
+    $('openDot').classList.toggle('off', !open); $('openTxt').textContent = open ? 'Máme otevřeno' : 'Teď máme zavřeno';
+    let sub;
+    if (open) { const m = Math.round((t[1] - h) * 60); sub = m <= 60 ? `Zavíráme za ${m} min` : `Zavíráme v ${t[1]}:00`; }
+    else { let k = w, add = 0; do { if (H[k] && (add || h < H[k][0])) break; k = (k + 1) % 7; add++; } while (add < 8); sub = `Otevíráme ${add === 0 ? 'dnes' : add === 1 ? 'zítra' : nm[k].toLowerCase()} v ${H[k][0]}:00`; }
+    $('openSub').textContent = sub;
+    $('hours').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(i => `<span class="${i === w ? 'today' : ''}">${nm[i]}</span><span class="${i === w ? 'today' : ''}">${H[i] ? H[i][0] + ':00 – ' + H[i][1] + ':00' : 'zavřeno'}</span>`).join('');
+  };
+  draw(); setInterval(draw, 60000);
+}
+
+/* 9 kalkulačka */
+{
+  let k = 1; const fmt = n => n.toLocaleString('cs-CZ') + ' Kč';
+  const upd = () => { const m = +$('calcM').value; $('calcMv').textContent = m; $('calcP').textContent = fmt(Math.round(m * 85 * k / 50) * 50); };
+  $('calcM').addEventListener('input', upd);
+  $('calcT').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; k = +b.dataset.k; $('calcT').querySelectorAll('button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); upd(); pop($('calcP')); });
+  upd();
+}
+
+/* 10 poptávka s fotkou */
+{
+  let url;
+  $('photo').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    if (url) URL.revokeObjectURL(url); url = URL.createObjectURL(f);
+    const img = document.createElement('img'); img.src = url; img.alt = 'Náhled vaší fotky';
+    $('drop').replaceChildren($('photo'), img); $('photoGo').disabled = false; $('photoGo').textContent = 'Odeslat poptávku';
+  });
+  $('photoGo').addEventListener('click', () => { $('photoGo').outerHTML = '<div class="ok">Odesláno! Ozvu se do 24 hodin s cenou.</div>'; });
+}
+
+/* 11 hodnocení */
+{
+  const T = ['', 'Mrzí nás to. Napište nám, co zlepšit.', 'Díky, budeme se snažit.', 'Děkujeme za hodnocení!', 'Super, moc děkujeme!', 'Wow, děkujeme! Sdílet na Google?'];
+  const dist = [62, 24, 8, 4, 2];
+  $('stars').innerHTML = [1, 2, 3, 4, 5].map(i => `<button type="button" role="radio" aria-checked="false" aria-label="${i} z 5" data-v="${i}">★</button>`).join('');
+  $('bars').innerHTML = dist.map((p, i) => `<div><span>${5 - i}</span><i style="--w:${p}%"></i><span>${p} %</span></div>`).join('');
+  $('stars').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const v = +b.dataset.v; [...$('stars').children].forEach((x, i) => { x.classList.toggle('on', i < v); x.setAttribute('aria-checked', i + 1 === v); }); $('starTxt').textContent = T[v]; pop(b); if (v === 5) confetti(b); });
+}
+
+/* 12 kvíz */
+{
+  const Q = [['Kolik bodů vede k zákazu řízení?', ['8', '12', '15'], 1], ['Co znamená zkratka PWA?', ['Progresivní webová aplikace', 'Placená webová aplikace', 'Program pro Windows'], 0], ['Jak se PWA instaluje?', ['Přes App Store', 'Přidáním na plochu z prohlížeče', 'Z CD'], 1]];
+  let i = 0, score = 0;
+  const draw = () => {
+    $('qbar').style.width = (i / Q.length * 100) + '%';
+    if (i === Q.length) { $('qq').textContent = `Hotovo! ${score} z ${Q.length} správně ${score === Q.length ? '🏆' : ''}`; $('qopts').innerHTML = '<button type="button" id="qAgain">Zkusit znovu</button>'; $('qAgain').addEventListener('click', () => { i = 0; score = 0; draw(); }); if (score === Q.length) confetti($('qq')); return; }
+    $('qq').textContent = Q[i][0]; $('qopts').innerHTML = Q[i][1].map((o, k) => `<button type="button" data-k="${k}">${o}</button>`).join('');
+  };
+  $('qopts').addEventListener('click', e => {
+    const b = e.target.closest('button[data-k]'); if (!b || $('qopts').dataset.lock) return;
+    const ok = +b.dataset.k === Q[i][2]; if (ok) score++;
+    b.classList.add(ok ? 'right' : 'wrong'); if (!ok) $('qopts').children[Q[i][2]].classList.add('right');
+    $('qopts').dataset.lock = 1; setTimeout(() => { delete $('qopts').dataset.lock; i++; draw(); }, 900);
+  });
+  draw();
+}
+
+/* 13 pokrok */
+{
+  let n = 0; const B = $('badges').children;
+  const draw = () => { const p = n / 4 * 100; $('ring').style.setProperty('--p', p); $('ringTxt').textContent = Math.round(p) + ' %'; [1, 2, 4].forEach((t, k) => B[k].classList.toggle('on', n >= t)); $('doneBtn').textContent = n >= 4 ? 'Začít nový týden ↻' : 'Mám hotovo ✓'; };
+  $('doneBtn').addEventListener('click', () => { n = n >= 4 ? 0 : n + 1; draw(); if (n === 4) confetti($('ring')); });
+  draw();
+}
+
+/* 14 offline */
+$('offSw').addEventListener('click', () => {
+  const off = $('offSw').getAttribute('aria-checked') !== 'true';
+  $('offSw').setAttribute('aria-checked', off); $('offBar').classList.toggle('off', off);
+  $('offBar').textContent = off ? 'Offline · vše funguje z uložených dat ✓' : 'Online · vše aktuální';
+});
+
+/* 15 vstupenka */
+{
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  $('code').innerHTML = Array.from({ length: 121 }, (_, k) => { const x = k % 11, y = k / 11 | 0, corner = (x < 3 && y < 3) || (x > 7 && y < 3) || (x < 3 && y > 7); return `<i class="${corner ? '' : rnd() > .5 ? '' : 'e'}"></i>`; }).join('');
+  const flip = () => $('ticket').classList.toggle('flip');
+  $('ticket').addEventListener('click', flip); $('ticket').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+}
+
+/* 16 jazyky */
+{
+  const L = { cs: ['Vítejte u nás!', 'Otevřeno denně od 8 do 20 hodin.', 'Rezervovat'], en: ['Welcome!', 'Open daily from 8 am to 8 pm.', 'Book now'], de: ['Willkommen!', 'Täglich von 8 bis 20 Uhr geöffnet.', 'Reservieren'], uk: ['Ласкаво просимо!', 'Відчинено щодня з 8 до 20 години.', 'Забронювати'] };
+  document.querySelectorAll('.lang [data-l]').forEach(b => b.addEventListener('click', () => {
+    const t = L[b.dataset.l]; $('langH').textContent = t[0]; $('langP').textContent = t[1]; $('langB').textContent = t[2];
+    document.querySelectorAll('.lang [data-l]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); pop($('langH'));
+  }));
+}
+
+
+/* 17 zprávy */
+{
+  const A = { 'Máte zítra volno?': 'Zítra máme volno v 10:30 a ve 14:00. Mám vám jeden termín podržet?', 'Kolik stojí střih?': 'Dámský střih je od 650 Kč, pánský od 350 Kč. Ceník najdete v záložce Služby.', 'Kde zaparkuju?': 'Hned za rohem je bezplatné parkoviště, 2 minuty pěšky. 🚗' };
+  const box = $('chat'), add = (t, c) => { const m = document.createElement('div'); m.className = 'msg ' + c; m.textContent = t; box.appendChild(m); box.scrollTop = box.scrollHeight; return m; };
+  $('chatQ').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || box.dataset.busy) return; box.dataset.busy = 1; add(b.textContent, 'out'); const ty = add('píše…', 'in typing'); setTimeout(() => { ty.remove(); add(A[b.textContent], 'in'); delete box.dataset.busy; }, 1000); });
+}
+/* 18 blog */
+{
+  const P = [['#ffd9c9', 'Nový podzimní ceník', 'před 2 dny', 'Od listopadu máme nové služby a zvýhodněné balíčky pro stálé zákazníky.'], ['#d9f4f0', 'Otevíráme v sobotu', 'minulý týden', 'Nově máme otevřeno i v sobotu od 9 do 14 hodin. Rezervace už běží.'], ['#e6e0ff', '5 tipů na zimní péči', 'před 3 týdny', 'Jak se starat o vlasy v zimě, aby zůstaly lesklé a zdravé.']];
+  const list = () => { $('blogList').innerHTML = P.map((p, i) => `<button class="post" type="button" data-i="${i}"><i style="--c:${p[0]}"></i><div><b>${p[1]}</b><span>${p[2]}</span></div></button>`).join(''); };
+  $('blogList').addEventListener('click', e => { const b = e.target.closest('.post'); if (b) { const p = P[+b.dataset.i]; $('blogList').innerHTML = `<div class="post-open"><h4>${p[1]}</h4><p>${p[3]}</p><button class="pill" type="button" id="blogBack">← Zpět na novinky</button></div>`; } else if (e.target.id === 'blogBack') list(); });
+  list();
+}
+/* vstupní animace karet */
+if (window.gsap && !reduce && 'IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { gsap.to(e.target, { opacity: 1, y: 0, duration: .7, ease: 'power3.out' }); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.f').forEach(c => { gsap.set(c, { opacity: 0, y: 30 }); io.observe(c); });
+}
+}
+</script>
+</body>
+</html>
