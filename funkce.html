@@ -15,6 +15,7 @@
 <meta property="og:title" content="Vyzkoušejte si funkce aplikací | Weby a aplikace">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#06090a">
+<link rel="icon" type="image/svg+xml" href="img/logo.svg">
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -210,7 +211,7 @@ footer{padding:0 0 40px;text-align:center;color:#6f8280;font-size:14px}
 .nav.open nav{display:flex}
 .nav nav a{padding:13px 14px;font-size:17px;border-radius:14px;flex:none}.nav nav a.navcta{margin-top:6px;background:var(--teal);color:#031312;font-weight:600;text-align:center}}
 .nav nav a.navcta{display:none}@media(max-width:920px){.nav nav a.navcta{display:block}}
-.brand{min-height:44px}
+.brand{min-height:44px}.brand-mark{flex:none;margin-right:10px}@media(max-width:480px){.brand-mark{width:26px;height:26px;margin-right:8px}}
 @media(max-width:920px){.nav{gap:8px}}
 @media(max-width:480px){.nav .long{display:none}.nav .btn{padding:0 16px}.brand{font-size:18px}}
 @media(max-width:400px){.nav>.btn{display:none}.burger{margin-left:auto}}
@@ -227,7 +228,7 @@ main.wrap{padding-top:clamp(60px,8vw,90px)}
 </head>
 <body>
 <header class="nav" id="top">
-  <a class="brand" href="index.html" aria-label="Weby a aplikace, úvod">weby<em>&amp;</em>aplikace</a>
+  <a class="brand" href="index.html" aria-label="Weby a aplikace, úvod"><svg class="brand-mark" width="30" height="30" viewBox="0 0 100 100" fill="none" aria-hidden="true"><defs><linearGradient id="wag" gradientUnits="userSpaceOnUse" x1="6" y1="20" x2="94" y2="80"><stop offset="0" stop-color="#2fd6c8"/><stop offset=".45" stop-color="#8fe3b8"/><stop offset=".7" stop-color="#ffa27a"/><stop offset="1" stop-color="#ff5f45"/></linearGradient></defs><path d="M8 24 L28 78 L50 26 L72 78 L92 24" stroke="url(#wag)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 58 H98" stroke="url(#wag)" stroke-width="8" stroke-linecap="round"/></svg>weby<em>&amp;</em>aplikace</a>
   <nav aria-label="Hlavní menu" id="mnav" data-lenis-prevent>
     <a href="ukazky.html">Ukázky</a><a href="sluzby.html">Služby</a><a href="funkce.html" aria-current="page">Funkce</a><a href="cenik.html">Ceník</a><a href="o-mne.html">O mně</a><a href="kontakt.html">Kontakt</a><a class="navcta" href="kontakt.html">Chci nový web →</a>
   </nav>
