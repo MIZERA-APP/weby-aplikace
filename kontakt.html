@@ -375,6 +375,9 @@ textarea{min-height:140px;resize:vertical}
 .f-note a{color:#9ef0ea}
 .f-err{margin:0;color:#ffb4a5;font-size:14px;min-height:0}
 .f-err:empty{display:none}
+.f-hint{margin:-6px 0 0;font-size:13px;color:#8fb1ae}
+#promo{text-transform:uppercase}
+#promo::placeholder{text-transform:none}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .out.ok pre{color:#9ef0ea}
 .out.ok #copy{display:none}
@@ -500,10 +503,13 @@ h1.h2{font-size:clamp(38px,6vw,80px)}
               <input type="radio" name="typ" id="t5" value="Nezisková organizace / pomoc lidem"><label for="t5">Nezisková organizace</label>
             </div>
           </fieldset>
+          <label>Jméno a příjmení *<input id="jmeno" name="jmeno" autocomplete="name" placeholder="Jana Nováková" required></label>
           <div class="f-row">
-            <label>Jméno<input id="jmeno" name="jmeno" autocomplete="name" placeholder="Jana Nováková" required></label>
-            <label>E-mail nebo telefon<input id="kontakt" name="kontakt" autocomplete="email" placeholder="jana@email.cz" required></label>
+            <label>E-mail *<input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="jana@email.cz"></label>
+            <label>Telefon *<input id="telefon" name="telefon" type="tel" autocomplete="tel" inputmode="tel" placeholder="777 123 456"></label>
           </div>
+          <p class="f-hint">* Vyplňte jméno a alespoň jeden kontakt, e-mail nebo telefon.</p>
+          <label>Promo kód (nepovinné)<input id="promo" name="promo" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Máte slevový kód? Napište ho sem"></label>
           <label>O projektu<textarea id="zprava" name="zprava" placeholder="Např. kavárna v Brně, chci web s menu a rezervací stolů"></textarea></label>
           <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <p class="f-err" id="ferr" role="alert"></p>
@@ -538,6 +544,7 @@ h1.h2{font-size:clamp(38px,6vw,80px)}
 {
 /* Kontakty a odkazy: doplňte a stránka je sama zobrazí */
 const CONTACT = { email: "", phone: "" };
+try { const pk = new URLSearchParams(location.search).get('promo'); if (pk && document.getElementById('promo')) document.getElementById('promo').value = pk.toUpperCase(); } catch (e) {}
 const WEB3FORMS_KEY = "5ab2e48b-d65b-4884-bca4-203b57214b04";
 const PROVIDER = { name: "Nela Mizera, MBA", ico: "76163806", sidlo: "" };
 const TESTIMONIALS = [
@@ -585,21 +592,28 @@ if (document.getElementById('reach')) document.getElementById('reach').innerHTML
 const form = document.getElementById('form'), out = document.getElementById('out'), outtxt = document.getElementById('outtxt');
 if (form) form.addEventListener('submit', async e => {
   e.preventDefault();
-  const j = form.jmeno.value.trim(), k = form.kontakt.value.trim();
-  const ferr = document.getElementById('ferr'); if (!j || !k) { ferr.textContent = !j ? 'Napište prosím své jméno.' : 'Napište prosím e-mail nebo telefon, ať se vám můžu ozvat.'; (j ? form.kontakt : form.jmeno).focus(); return; } ferr.textContent = '';
+  const j = form.jmeno.value.trim(), em = form.email.value.trim(), tel = form.telefon.value.trim(), promo = form.promo.value.trim().toUpperCase();
+  const ferr = document.getElementById('ferr');
+  const emOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em), telOk = tel.replace(/[^\d]/g, '').length >= 9;
+  let chyba = '', pole = null;
+  if (j.split(/\s+/).length < 2) { chyba = 'Napište prosím jméno i příjmení.'; pole = form.jmeno; }
+  else if (!em && !tel) { chyba = 'Vyplňte prosím e-mail nebo telefon, ať se vám můžu ozvat.'; pole = form.email; }
+  else if (em && !emOk) { chyba = 'Zkontrolujte prosím e-mail, vypadá neúplně.'; pole = form.email; }
+  else if (tel && !telOk) { chyba = 'Zkontrolujte prosím telefon, chybí mu číslice.'; pole = form.telefon; }
+  if (chyba) { ferr.textContent = chyba; pole.focus(); return; } ferr.textContent = '';
   const typ = form.querySelector('[name=typ]:checked').value;
   const zprava = form.zprava.value.trim();
-  const body = `Poptávka: ${typ}\nJméno: ${j}\nKontakt: ${k}\n\n${zprava}`;
+  const body = `Poptávka: ${typ}\nJméno: ${j}\nE-mail: ${em || '-'}\nTelefon: ${tel || '-'}\nPromo kód: ${promo || '-'}\n\n${zprava}`;
   const btn = form.querySelector('.f-send'), btnTxt = btn.textContent;
   btn.disabled = true; btn.textContent = 'Odesílám…'; out.classList.remove('show', 'ok');
   const data = {
     access_key: WEB3FORMS_KEY,
-    subject: 'Nová poptávka z webu: ' + typ,
+    subject: 'Nová poptávka z webu: ' + typ + (promo ? ' · promo ' + promo : ''),
     from_name: 'Weby & aplikace – web',
-    'Typ projektu': typ, 'Jméno': j, 'Kontakt': k, 'O projektu': zprava || '(nevyplněno)',
+    'Typ projektu': typ, 'Jméno a příjmení': j, 'E-mail': em || '(nevyplněno)', 'Telefon': tel || '(nevyplněno)', 'Promo kód': promo || '(bez kódu)', 'O projektu': zprava || '(nevyplněno)',
     botcheck: form.botcheck.checked
   };
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(k)) data.replyto = k;
+  if (em) data.replyto = em;
   try {
     const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
     const res = await r.json();
