@@ -374,6 +374,9 @@ textarea{min-height:140px;resize:vertical}
 .f-note a{color:#9ef0ea}
 .f-err{margin:0;color:#ffb4a5;font-size:14px;min-height:0}
 .f-err:empty{display:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.out.ok pre{color:#9ef0ea}
+.out.ok #copy{display:none}
 .out{display:none;background:#00000055;border:1px solid #ffffff22;border-radius:18px;padding:18px}
 .out.show{display:block}
 .out pre{white-space:pre-wrap;font:15px/1.5 "Inter Tight";margin:0 0 12px}
@@ -501,6 +504,7 @@ h1.h2{font-size:clamp(38px,6vw,80px)}
             <label>E-mail nebo telefon<input id="kontakt" name="kontakt" autocomplete="email" placeholder="jana@email.cz" required></label>
           </div>
           <label>O projektu<textarea id="zprava" name="zprava" placeholder="Např. kavárna v Brně, chci web s menu a rezervací stolů"></textarea></label>
+          <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
           <p class="f-err" id="ferr" role="alert"></p>
           <button class="btn teal f-send" type="submit">Odeslat poptávku →</button>
           <p class="f-note">Údaje z formuláře použiji jen k odpovědi na poptávku. Více v <a href="podminky.html#osobni-udaje">zásadách ochrany osobních údajů</a>.</p>
@@ -533,6 +537,7 @@ h1.h2{font-size:clamp(38px,6vw,80px)}
 {
 /* Kontakty a odkazy: doplňte a stránka je sama zobrazí */
 const CONTACT = { email: "", phone: "" };
+const WEB3FORMS_KEY = "5ab2e48b-d65b-4884-bca4-203b57214b04";
 const PROVIDER = { name: "Nela Mizera, MBA", ico: "76163806", sidlo: "" };
 const TESTIMONIALS = [
   /* { text: "Citace klienta", who: "Jméno", role: "web pro …" }, */
@@ -577,18 +582,33 @@ if (document.getElementById('reach')) document.getElementById('reach').innerHTML
 
 /* poptávka */
 const form = document.getElementById('form'), out = document.getElementById('out'), outtxt = document.getElementById('outtxt');
-if (form) form.addEventListener('submit', e => {
+if (form) form.addEventListener('submit', async e => {
   e.preventDefault();
   const j = form.jmeno.value.trim(), k = form.kontakt.value.trim();
   const ferr = document.getElementById('ferr'); if (!j || !k) { ferr.textContent = !j ? 'Napište prosím své jméno.' : 'Napište prosím e-mail nebo telefon, ať se vám můžu ozvat.'; (j ? form.kontakt : form.jmeno).focus(); return; } ferr.textContent = '';
   const typ = form.querySelector('[name=typ]:checked').value;
-  const body = `Poptávka: ${typ}\nJméno: ${j}\nKontakt: ${k}\n\n${form.zprava.value.trim()}`;
-  outtxt.textContent = body; out.classList.add('show');
-  if (CONTACT.email) {
-    const a = document.createElement('a');
-    a.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent('Poptávka: ' + typ)}&body=${encodeURIComponent(body)}`; a.click();
-    outtxt.textContent = 'Otevírám váš e-mail s předvyplněnou poptávkou. Kdyby se neotevřel, pošlete text na ' + CONTACT.email + ':\n\n' + body;
-  }
+  const zprava = form.zprava.value.trim();
+  const body = `Poptávka: ${typ}\nJméno: ${j}\nKontakt: ${k}\n\n${zprava}`;
+  const btn = form.querySelector('.f-send'), btnTxt = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Odesílám…'; out.classList.remove('show', 'ok');
+  const data = {
+    access_key: WEB3FORMS_KEY,
+    subject: 'Nová poptávka z webu: ' + typ,
+    from_name: 'Weby & aplikace – web',
+    'Typ projektu': typ, 'Jméno': j, 'Kontakt': k, 'O projektu': zprava || '(nevyplněno)',
+    botcheck: form.botcheck.checked
+  };
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(k)) data.replyto = k;
+  try {
+    const r = await fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(data) });
+    const res = await r.json();
+    if (!r.ok || !res.success) throw new Error(res.message || r.status);
+    outtxt.textContent = 'Děkuji, poptávka dorazila. Ozvu se vám co nejdřív, obvykle do jednoho pracovního dne.';
+    out.classList.add('show', 'ok'); form.reset(); form.querySelector('#t1').checked = true;
+  } catch (err) {
+    outtxt.textContent = 'Poptávku se nepodařilo odeslat. Zkuste to prosím za chvíli znovu, nebo si text zkopírujte:\n\n' + body;
+    out.classList.add('show');
+  } finally { btn.disabled = false; btn.textContent = btnTxt; }
 });
 if (document.getElementById('copy')) document.getElementById('copy').addEventListener('click', async e => { try { await navigator.clipboard.writeText(outtxt.textContent); e.target.textContent = 'Zkopírováno ✓'; } catch (err) {} });
 
